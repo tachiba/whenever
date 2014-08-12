@@ -3,7 +3,7 @@ module Whenever
     attr_reader :roles
 
     def initialize(options)
-      @jobs, @env, @set_variables, @pre_set_variables = {}, {}, {}, {}
+      @jobs, @env, @set_variables, @pre_set_variables, @super_options = {}, {}, {}, {}, {}
 
       if options.is_a? String
         options = { :string => options }
@@ -38,9 +38,20 @@ module Whenever
       @env[variable.to_s] = value
     end
 
+    def options(options)
+      if @super_options.empty?
+        @super_options = options
+      else
+        raise '#options cannnot be nested.'
+      end
+
+      yield
+      @super_options = {}
+    end
+
     def every(frequency, options = {})
       @current_time_scope = frequency
-      @options = options
+      @options = @super_options.merge(options)
       yield
     end
 
